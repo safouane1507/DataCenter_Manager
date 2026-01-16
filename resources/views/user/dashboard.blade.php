@@ -1,96 +1,51 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="max-width: 1200px; margin: 0 auto;">
-    <h1>Administration du Data Center</h1>
-
-    <div class="grid" style="margin-bottom: 40px; grid-template-columns: repeat(3, 1fr);">
-        <div class="card" style="text-align: center; border-top: 4px solid var(--accent);">
-            <div style="font-size: 2rem; font-weight: bold;">{{ $stats['users_count'] }}</div>
-            <div>Utilisateurs Inscrits</div>
-        </div>
-        <div class="card" style="text-align: center; border-top: 4px solid var(--success);">
-            <div style="font-size: 2rem; font-weight: bold;">{{ $stats['resources_count'] }}</div>
-            <div>Ressources Totales</div>
-        </div>
-        <div class="card" style="text-align: center; border-top: 4px solid orange;">
-            <div style="font-size: 2rem; font-weight: bold;">{{ $stats['pending_reservations'] }}</div>
-            <div>Réservations en attente</div>
-        </div>
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1>Mon Espace Utilisateur</h1>
+        <a href="{{ route('reservations.create') }}" style="background: var(--accent); color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            + Nouvelle Réservation
+        </a>
     </div>
 
-    @if($pendingUsers->isNotEmpty())
-        <div class="card" style="margin-bottom: 30px; border-left: 5px solid red;">
-            <h2 style="color: #c0392b;">👤 Comptes en attente de validation</h2>
-            <table style="width: 100%; border-collapse: collapse;">
+    <div class="card">
+        <h3>Mes Réservations Récentes</h3>
+        @if($myReservations->isEmpty())
+            <p style="color: #777; font-style: italic;">Vous n'avez aucune réservation pour le moment.</p>
+        @else
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                 <thead>
-                    <tr style="background: #f9f9f9;">
-                        <th style="padding: 10px; text-align: left;">Nom</th>
-                        <th style="padding: 10px; text-align: left;">Email</th>
-                        <th style="padding: 10px; text-align: left;">Date demande</th>
-                        <th style="padding: 10px; text-align: right;">Action</th>
+                    <tr style="background: #f4f4f4; text-align: left;">
+                        <th style="padding: 10px;">Ressource</th>
+                        <th style="padding: 10px;">Dates</th>
+                        <th style="padding: 10px;">Statut</th>
+                        <th style="padding: 10px;">Justification</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($pendingUsers as $user)
+                    @foreach($myReservations as $reservation)
                         <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 10px;">{{ $user->name }}</td>
-                            <td style="padding: 10px;">{{ $user->email }}</td>
-                            <td style="padding: 10px;">{{ $user->created_at->format('d/m/Y') }}</td>
-                            <td style="padding: 10px; text-align: right;">
-                                <form action="{{ route('admin.users.activate', $user->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" style="background: var(--success); color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer;">
-                                        Activer le compte
-                                    </button>
-                                </form>
+                            <td style="padding: 10px; font-weight: bold;">{{ $reservation->resource->label }}</td>
+                            <td style="padding: 10px;">
+                                Du {{ \Carbon\Carbon::parse($reservation->start_date)->format('d/m/Y H:i') }}<br>
+                                Au {{ \Carbon\Carbon::parse($reservation->end_date)->format('d/m/Y H:i') }}
                             </td>
+                            <td style="padding: 10px;">
+                                @if($reservation->status == 'pending')
+                                    <span style="color: orange; font-weight: bold;">En attente</span>
+                                @elseif($reservation->status == 'approved')
+                                    <span style="color: green; font-weight: bold;">Approuvée</span>
+                                @elseif($reservation->status == 'rejected')
+                                    <span style="color: red; font-weight: bold;">Refusée</span>
+                                @endif
+                            </td>
+                            <td style="padding: 10px; color: #555;">{{ Str::limit($reservation->justification, 50) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
-    @endif
-
-    <div class="card">
-        <h2>➕ Ajouter une Ressource</h2>
-        <form action="{{ route('admin.resources.store') }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            @csrf
-            <div>
-                <label>Nom de la ressource</label>
-                <input type="text" name="label" required style="width: 100%; padding: 8px; margin-top: 5px;">
-            </div>
-            <div>
-                <label>Catégorie</label>
-                <select name="category" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    <option value="Serveur">Serveur Physique</option>
-                    <option value="VM">Machine Virtuelle</option>
-                    <option value="Stockage">Baie de Stockage</option>
-                    <option value="Réseau">Switch / Routeur</option>
-                </select>
-            </div>
-            <div>
-                <label>Responsable Technique</label>
-                <select name="manager_id" required style="width: 100%; padding: 8px; margin-top: 5px;">
-                    @foreach($managers as $manager)
-                        <option value="{{ $manager->id }}">{{ $manager->name }} ({{ $manager->role }})</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label>Emplacement</label>
-                <input type="text" name="location" placeholder="Ex: Baie A2" style="width: 100%; padding: 8px; margin-top: 5px;">
-            </div>
-            <div style="grid-column: span 2;">
-                <label>Description</label>
-                <textarea name="description" rows="2" style="width: 100%; padding: 8px; margin-top: 5px;"></textarea>
-            </div>
-            <div style="grid-column: span 2;">
-                <button type="submit" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
-                    Enregistrer la ressource
-                </button>
-            </div>
-        </form>
+        @endif
     </div>
 </div>
 @endsection

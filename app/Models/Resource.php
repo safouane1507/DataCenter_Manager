@@ -9,24 +9,26 @@ class Resource extends Model
 {
     use HasFactory;
 
-    // Champs autorisés (doit correspondre à votre migration)
     protected $fillable = [
         'label',
         'category',
         'description',
-        'specifications', // Stocké en JSON
+        'specifications',
         'location',
         'status',
         'manager_id',
     ];
 
-    // RELATION 1 : Une ressource est gérée par un Responsable (User)
+    // MODIFICATION IMPORTANTE : Convertit automatiquement le JSON en tableau PHP
+    protected $casts = [
+        'specifications' => 'array',
+    ];
+
     public function manager()
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    // RELATION 2 : Une ressource peut avoir plusieurs réservations
     public function reservations()
     {
         return $this->hasMany(Reservation::class);

@@ -13,6 +13,7 @@
             --white: #ffffff;
             --text: #333;
             --success: #27ae60;
+            --danger: #e74c3c;
         }
 
         body {
@@ -35,17 +36,59 @@
 
         .logo { font-size: 1.5rem; font-weight: bold; }
 
-        nav a {
+        nav a, nav button {
             color: white;
             text-decoration: none;
             margin-left: 20px;
             padding: 8px 15px;
             border-radius: 4px;
             transition: 0.3s;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
         }
 
         nav a.btn-register { background: var(--accent); }
         nav a:hover { opacity: 0.8; }
+
+        /* --- STYLE DES NOTIFICATIONS --- */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fff;
+            min-width: 320px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .notif-item {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        .notif-item:hover { background-color: #f9f9f9; color: var(--accent); }
+        .notif-time { font-size: 0.75rem; color: #888; display: block; margin-top: 4px; }
+        
+        .badge-count {
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            position: absolute;
+            top: -8px;
+            right: -10px;
+        }
+        /* ------------------------------- */
 
         .container { padding: 40px 5%; }
 
@@ -82,12 +125,62 @@
     <div class="logo">DC-Manager</div>
     <nav>
         <a href="/">Ressources</a>
-        <a href="/login">Connexion</a>
-        <a href="/register-request" class="btn-register">Demander un compte</a>
+
+        @guest
+            <a href="{{ route('login') }}">Connexion</a>
+            <a href="{{ route('register.request') }}" class="btn-register">Demander un compte</a>
+        @else
+            @php
+                $unread = \App\Models\Notification::where('user_id', Auth::id())
+                          ->where('is_read', false)
+                          ->latest()
+                          ->get();
+            @endphp
+            
+            <div class="dropdown">
+                <a href="#" style="position: relative;">
+                    🔔
+                    @if($unread->count() > 0)
+                        <span class="badge-count">{{ $unread->count() }}</span>
+                    @endif
+                </a>
+                <div class="dropdown-content">
+                    @if($unread->isEmpty())
+                        <div style="padding: 15px; color: #777; text-align: center;">Aucune notification</div>
+                    @else
+                        @foreach($unread as $notif)
+                            <a href="{{ $notif->link }}" class="notif-item">
+                                {{ $notif->message }}
+                                <span class="notif-time">{{ $notif->created_at->diffForHumans() }}</span>
+                            </a>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+
+            @if(Auth::user()->role === 'admin')
+                <a href="{{ route('admin.dashboard') }}">Admin</a>
+            @elseif(Auth::user()->role === 'manager')
+                <a href="{{ route('manager.dashboard') }}">Manager</a>
+            @else
+                <a href="{{ route('user.dashboard') }}">Mon Espace</a>
+            @endif
+
+            <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                @csrf
+                <button type="submit">Déconnexion</button>
+            </form>
+        @endguest
     </nav>
 </header>
 
 <main class="container">
+    @if(session('success'))
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
     @yield('content')
 </main>
 

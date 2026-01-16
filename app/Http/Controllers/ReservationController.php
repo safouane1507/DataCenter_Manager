@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\Notification; // <--- AJOUT IMPORTANT
+use App\Models\User;
 
 class ReservationController extends Controller
 {
@@ -18,7 +20,7 @@ class ReservationController extends Controller
         return view('user.reservations.create', compact('resources'));
     }
 
-    // 2. Enregistrer la demande
+    // 2. Enregistrer la demande (Et notifier le Manager)
     public function store(Request $request)
     {
         $request->validate([
@@ -37,32 +39,55 @@ class ReservationController extends Controller
             'status' => 'pending',
         ]);
 
+        // --- NOTIFICATION AU MANAGER ---
+        $resource = Resource::find($request->resource_id);
+        if ($resource && $resource->manager_id) {
+            Notification::create([
+                'user_id' => $resource->manager_id,
+                'message' => "Nouvelle demande de " . Auth::user()->name . " pour " . $resource->label,
+                'link' => route('manager.dashboard'),
+            ]);
+        }
+        // -------------------------------
+
         return redirect()->route('user.dashboard')->with('success', 'Votre demande est enregistrée et en attente de validation.');
     }
 
     // --- Espace RESPONSABLE ---
 
-    // 3. Traiter (Accepter/Refuser) une demande
+    // 3. Traiter une demande (Et notifier l'Utilisateur)
     public function handleRequest(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
         
-        // Sécurité : Vérifier que le manager connecté est bien responsable de cette ressource
-        // Note: Cela suppose que la relation 'resource' est chargée ou accessible via $reservation->resource
+        // Sécurité
         if ($reservation->resource->manager_id !== Auth::id()) {
             abort(403, "Action non autorisée sur cette ressource.");
         }
 
+        $messageUser = "";
+
         if ($request->action === 'approve') {
             $reservation->update(['status' => 'approved']);
-            // Optionnel : Mettre à jour le statut de la ressource si nécessaire
-            // $reservation->resource->update(['status' => 'occupied']);
+            $messageUser = "✅ Votre réservation pour " . $reservation->resource->label . " a été acceptée !";
+            
         } elseif ($request->action === 'reject') {
             $reservation->update([
                 'status' => 'rejected',
                 'manager_feedback' => 'Demande refusée par le responsable.'
             ]);
+            $messageUser = "❌ Votre réservation pour " . $reservation->resource->label . " a été refusée.";
         }
+
+        // --- NOTIFICATION A L'UTILISATEUR ---
+        if ($messageUser) {
+            Notification::create([
+                'user_id' => $reservation->user_id,
+                'message' => $messageUser,
+                'link' => route('user.dashboard'),
+            ]);
+        }
+        // ------------------------------------
 
         return back()->with('success', 'La demande a été traitée.');
     }

@@ -10,19 +10,13 @@ return new class extends Migration
     {
         Schema::create('resources', function (Blueprint $table) {
             $table->id();
-            $table->string('label'); // Nom (ex: Serveur-01)
-            $table->string('category'); // Serveur, VM, Stockage, Réseau
-            
-            // Caractéristiques techniques (CPU, RAM, OS, etc.)
+            $table->string('label');
+            $table->string('category');
             $table->text('description')->nullable();
-            $table->json('specifications')->nullable(); 
-            
-            $table->string('location')->nullable(); // Emplacement dans le Data Center
+            $table->json('specifications')->nullable(); // Important pour les specs
+            $table->string('location')->nullable();
             $table->enum('status', ['available', 'maintenance', 'occupied', 'inactive'])->default('available');
-            
-            // Lien vers le Responsable Technique (un utilisateur avec le rôle 'manager')
             $table->foreignId('manager_id')->nullable()->constrained('users')->onDelete('set null');
-            
             $table->timestamps();
         });
     }
