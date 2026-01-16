@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Resource;
 use App\Models\Reservation;
 use App\Models\User;
+
 class DashboardController extends Controller
 {
     // Vue pour l'invité (Public)
@@ -14,20 +15,31 @@ class DashboardController extends Controller
         return view('guest.index', compact('resources'));
     }
 
-    // Dashboard Utilisateur Interne
+    // Détail d'une ressource (Nouveau)
+    public function resourceDetail($id) {
+        $resource = Resource::findOrFail($id);
+        return view('guest.resource_detail', compact('resource'));
+    }
+
+    // Formulaire d'inscription (Nouveau)
+    public function showRegisterForm() {
+        return view('auth.register');
+    }
+
+    // Dashboard Utilisateur
     public function userDashboard() {
-        $myReservations = auth()->user()->reservations()->latest()->get();
+        $user = auth()->guard()->user();
+        $myReservations = $user ? $user->reservations()->latest()->get() : collect();
         return view('user.dashboard', compact('myReservations'));
     }
 
-    // Dashboard Responsable Technique
+    // Dashboard Responsable
     public function managerDashboard() {
-        // Ressources gérées par ce responsable
-        $managedResources = Resource::where('manager_id', auth()->id())->get();
+        $managedResources = Resource::where('manager_id', auth()->user()->id)->get();
         return view('manager.dashboard', compact('managedResources'));
     }
 
-    // Dashboard Administrateur
+    // Dashboard Admin
     public function adminDashboard() {
         $stats = [
             'users_count' => User::count(),
