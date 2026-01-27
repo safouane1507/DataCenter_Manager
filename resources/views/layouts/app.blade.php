@@ -3,190 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataCenter - Gestion des Ressources</title>
+    <title>DataCenter Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS PERSONNALISÉ (VANILLA) */
+        /* --- VARIABLES DE COULEURS --- */
         :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --bg: #f4f7f6;
-            --white: #ffffff;
-            --text: #333;
-            --success: #27ae60;
-            --danger: #e74c3c;
+            /* ☀️ Light Mode */
+            --bg-background: #F6F9F9;
+            --bg-surface: #FFFFFF;
+            --primary: #0FA3A3;
+            --secondary: #5FC9C4;
+            --text-primary: #1C2F30;
+            --text-muted: #647F80;
+            --border: #DCECEC;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        /* 🌙 Dark Mode */
+        body.dark {
+            --bg-background: #081B1C;
+            --bg-surface: #102C2D;
+            --primary: #4DB6AC;
+            --secondary: #80CBC4;
+            --text-primary: #E0F2F1;
+            --text-muted: #B2DFDB;
+            --border: #294C4C;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-background);
+            color: var(--text-primary);
             margin: 0;
-            line-height: 1.6;
+            transition: all 0.3s ease;
         }
 
         header {
-            background: var(--primary);
-            color: var(--white);
-            padding: 1rem 5%;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 5%;
+            height: 70px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
         }
 
-        .logo { font-size: 1.5rem; font-weight: bold; }
-
-        nav a, nav button {
-            color: white;
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--primary); 
             text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: 0.3s;
-            background: none;
-            border: none;
-            font-size: 1rem;
+        }
+        .logo span { color: var(--text-primary); }
+
+        nav { display: flex; align-items: center; gap: 15px; }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
             cursor: pointer;
         }
+        .nav-link:hover { color: var(--primary); }
 
-        nav a.btn-register { background: var(--accent); }
-        nav a:hover { opacity: 0.8; }
-
-        /* --- STYLE DES NOTIFICATIONS --- */
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content {
+        /* --- MENU DÉROULANT --- */
+        .dropdown-container { position: relative; height: 70px; display: flex; align-items: center; }
+        .dropdown-menu {
             display: none;
             position: absolute;
-            right: 0;
-            background-color: #fff;
-            min-width: 320px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1000;
-            border-radius: 5px;
-            overflow: hidden;
+            top: 65px;
+            left: -20px;
+            width: 240px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 10px;
+            z-index: 1001;
+            content: "";
         }
-        .dropdown:hover .dropdown-content { display: block; }
-        
-        .notif-item {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-            border-bottom: 1px solid #eee;
-            font-size: 0.9rem;
-        }
-        .notif-item:hover { background-color: #f9f9f9; color: var(--accent); }
-        .notif-time { font-size: 0.75rem; color: #888; display: block; margin-top: 4px; }
-        
-        .badge-count {
-            background-color: var(--danger);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.75rem;
+
+        .dropdown-menu::before {
+            content: "";
             position: absolute;
-            top: -8px;
-            right: -10px;
-        }
-        /* ------------------------------- */
-
-        .container { padding: 40px 5%; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            top: -15px; /* Comble le vide de 15px au-dessus */
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: transparent; /* Invisible mais détecte la souris */
         }
 
-        .card {
-            background: var(--white);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-top: 5px solid var(--accent);
+        .dropdown-container:hover .dropdown-menu { display: block; animation: fadeIn 0.2s ease-out; }
+        
+        .dropdown-item {
+            display: flex; align-items: center; padding: 10px 15px;
+            color: var(--text-muted); text-decoration: none; border-radius: 8px;
+        }
+        .dropdown-item:hover { background: var(--bg-background); color: var(--primary); }
+
+        /* --- BOUTONS --- */
+        .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; }
+        .btn-outline { border: 1px solid var(--border); color: var(--text-primary); background: transparent; }
+        .btn-primary { background: var(--primary); color: #fff; }
+
+        /* --- SALUTATION --- */
+        .user-greeting {
+            display: flex; align-items: center; gap: 10px;
+            padding: 5px 12px; border-radius: 30px;
+            background: var(--bg-background); border: 1px solid var(--border);
+        }
+        .user-avatar {
+            width: 32px; height: 32px; background: var(--secondary); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold;
         }
 
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            background: #e0e0e0;
+        /* --- TOGGLE SWITCH --- */
+        #theme-toggle {
+            background: var(--bg-background);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .status-available { color: var(--success); font-weight: bold; }
-
-        footer { text-align: center; padding: 20px; color: #777; font-size: 0.9rem; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="light"> <header>
+    <a href="/" class="logo">Data<span>Center</span></a>
 
-<header>
-    <div class="logo">DC-Manager</div>
     <nav>
-        <a href="/">Ressources</a>
+        <div class="dropdown-container">
+            <a href="/" class="nav-link">Ressources ▾</a>
+            <div class="dropdown-menu">
+                <div style="padding: 0 15px 5px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Filtrer par</div>
+                <a href="/?cat=Serveur Physique" class="dropdown-item">🖥️ Serveurs</a>
+                <a href="/?cat=Machine Virtuelle" class="dropdown-item">☁️ Virtuel (VM)</a>
+                <a href="/?cat=Stockage" class="dropdown-item">💾 Stockage</a>
+                <a href="/?cat=Réseau" class="dropdown-item">🌐 Réseau</a>
+            </div>
+        </div>
+
+        <button id="theme-toggle" title="Changer de mode">
+            <span id="theme-toggle-icon">🌙</span>
+        </button>
 
         @guest
-            <a href="{{ route('login') }}">Connexion</a>
-            <a href="{{ route('register.request') }}" class="btn-register">Demander un compte</a>
+            <a href="{{ route('login') }}" class="btn btn-outline">Connexion</a>
+            <a href="{{ route('register.request') }}" class="btn btn-primary">Inscription</a>
         @else
             @php
-                $unread = \App\Models\Notification::where('user_id', Auth::id())
-                          ->where('is_read', false)
-                          ->latest()
-                          ->get();
+                $roleTitle = "M.";
+                if(Auth::user()->role === 'manager') $roleTitle = "Ing.";
+                if(Auth::user()->role === 'admin') $roleTitle = "Admin";
             @endphp
             
-            <div class="dropdown">
-                <a href="#" style="position: relative;">
-                    🔔
-                    @if($unread->count() > 0)
-                        <span class="badge-count">{{ $unread->count() }}</span>
-                    @endif
-                </a>
-                <div class="dropdown-content">
-                    @if($unread->isEmpty())
-                        <div style="padding: 15px; color: #777; text-align: center;">Aucune notification</div>
-                    @else
-                        @foreach($unread as $notif)
-                            <a href="{{ $notif->link }}" class="notif-item">
-                                {{ $notif->message }}
-                                <span class="notif-time">{{ $notif->created_at->diffForHumans() }}</span>
-                            </a>
-                        @endforeach
-                    @endif
+            <div class="user-greeting">
+                <div class="user-avatar">{{ substr(Auth::user()->name, 0, 1) }}</div>
+                <div style="font-size: 0.85rem; line-height: 1.2;">
+                    <span style="color: var(--text-muted); font-size: 0.8em;">Bonjour,</span><br>
+                    <strong style="color: var(--text-primary);">{{ $roleTitle }} {{ Auth::user()->name }}</strong>
                 </div>
             </div>
 
-            @if(Auth::user()->role === 'admin')
-                <a href="{{ route('admin.dashboard') }}">Admin</a>
-            @elseif(Auth::user()->role === 'manager')
-                <a href="{{ route('manager.dashboard') }}">Manager</a>
-            @else
-                <a href="{{ route('user.dashboard') }}">Mon Espace</a>
-            @endif
+            <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : (Auth::user()->role === 'manager' ? route('manager.dashboard') : route('user.dashboard')) }}" class="nav-link">
+                Dashboard
+            </a>
 
-            <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+            <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf
-                <button type="submit">Déconnexion</button>
+                <button type="submit" class="nav-link" style="background:none; border:none; font-size:1.2rem;" title="Déconnexion">⏻</button>
             </form>
         @endguest
     </nav>
 </header>
 
 <main class="container">
-    @if(session('success'))
-        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     @yield('content')
 </main>
 
-<footer>
-    &copy; 2026 Data Center - Gestion Interne
+<footer style="text-align: center; padding: 40px; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 60px;">
+    &copy; 2026 DataCenter Management System.
 </footer>
 
+<script>
+    const btn = document.getElementById('theme-toggle');
+    const icon = document.getElementById('theme-toggle-icon');
+    const body = document.body;
+
+    // Charger le thème sauvegardé
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        body.classList.add('dark');
+        icon.textContent = '☀️';
+    }
+
+    btn.addEventListener('click', () => {
+        body.classList.toggle('dark');
+        
+        if (body.classList.contains('dark')) {
+            localStorage.setItem('theme', 'dark');
+            icon.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light');
+            icon.textContent = '🌙';
+        }
+    });
+</script>
 </body>
 </html>
