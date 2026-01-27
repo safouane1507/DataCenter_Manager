@@ -18,6 +18,9 @@
             --border: #DCECEC;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             --radius: 12px;
+            /* Couleurs pour les tables et lea inputs en Light Mode */
+            --table-header: #f8f9fa;
+            --input-bg: #ffffff;
         }
 
         /* 🌙 Dark Mode */
@@ -30,6 +33,9 @@
             --text-muted: #B2DFDB;
             --border: #294C4C;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            /* Couleurs spécifiques pour Dark Mode */
+            --table-header: #153536; /* Plus sombre que bg-surface */
+            --input-bg: #081B1C;
         }
 
         body {
@@ -40,6 +46,38 @@
             transition: all 0.3s ease;
         }
 
+        /* --- CORRECTION GLOBALE DES FORMULAIRES (Inputs, Selects) --- */
+        input, select, textarea {
+            background-color: var(--input-bg) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 6px;
+        }
+        /* Correction spécifique pour les options des menus déroulants */
+        select option {
+            background-color: var(--bg-surface);
+            color: var(--text-primary);
+        }
+        /* --- CORRECTION GLOBALE DES TABLEAUX (Admin/Manager) --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        /* En-tête de tableau (La bande blanche qui posait problème) */
+        thead tr, th {
+            background-color: var(--table-header) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Lignes du tableau */
+        tbody tr {
+            background-color: var(--bg-surface) !important;
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* --- STYLES GENERAUX --- */
         header {
             background: var(--bg-surface);
             border-bottom: 1px solid var(--border);
@@ -73,7 +111,7 @@
         }
         .nav-link:hover { color: var(--primary); }
 
-        /* --- MENU DÉROULANT --- */
+        /* --- MENU DEROULANT --- */
         .dropdown-container { position: relative; height: 70px; display: flex; align-items: center; }
         .dropdown-menu {
             display: none;
@@ -108,10 +146,11 @@
         }
         .dropdown-item:hover { background: var(--bg-background); color: var(--primary); }
 
-        /* --- BOUTONS --- */
+        /* --- BOUTONS AND CARDS    THE PROBLEM IS HNA --- */
         .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; }
         .btn-outline { border: 1px solid var(--border); color: var(--text-primary); background: transparent; }
         .btn-primary { background: var(--primary); color: #fff; }
+        .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
 
         /* --- SALUTATION --- */
         .user-greeting {
@@ -184,7 +223,7 @@
                 Dashboard
             </a>
 
-            {{-- here --}}
+            {{-- here  IS OTHER PTOBLEM BUTTON OF THE SETTINGS --}}
             <a href="{{ route('profile.settings') }}" class="nav-link" style="margin-right: 15px;">⚙️ Paramètres</a> 
             {{-- here --}}
 
@@ -201,7 +240,7 @@
 </main>
 
 <footer style="text-align: center; padding: 40px; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 60px;">
-    &copy; 2026 DataCenter Management System.
+    &copy; 2026 DataCenter Management System By IDAI Studens.
 </footer>
 
 <script>
