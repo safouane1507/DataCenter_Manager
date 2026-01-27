@@ -90,8 +90,15 @@ class DashboardController extends Controller
             ->select('custom_requests.*', 'users.name', 'users.email')
             ->where('custom_requests.status', 'pending')
             ->get();
+            
 
-        return view('admin.dashboard', compact('stats', 'pendingUsers', 'allUsers', 'customRequests'));
+            // 2. Récupérer TOUTES les réservations en attente
+        $pendingReservations = Reservation::where('status', 'pending')
+            ->with(['user', 'resource'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'pendingUsers', 'allUsers', 'managers', 'customRequests', 'pendingReservations'));
     }
 
     // --- GESTION DES RESSOURCES ---

@@ -183,6 +183,10 @@
             <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : (Auth::user()->role === 'manager' ? route('manager.dashboard') : route('user.dashboard')) }}" class="nav-link">
                 Dashboard
             </a>
+            
+            {{-- here --}}
+            <a href="{{ route('profile.settings') }}" style="margin-right: 15px;">⚙️ Paramètres</a> 
+            {{-- here --}}
 
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf

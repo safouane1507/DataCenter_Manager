@@ -47,6 +47,7 @@ class AdminController extends Controller
             'category' => 'required|string', // Assurez-vous que les catégories correspondent au menu (ex: "Machine Virtuelle")
             'location' => 'required|string',
             'description' => 'nullable|string',
+            'manager_id' => 'required|exists:users,id', // On valide que le manager existe
         ]);
 
         Resource::create([
@@ -55,9 +56,28 @@ class AdminController extends Controller
             'location' => $request->location,
             'description' => $request->description,
             'status' => 'available',
-            'manager_id' => Auth::id(), // L'admin devient le gestionnaire par défaut
+            'manager_id' => $request->manager_id, // L'admin devient le gestionnaire par défaut
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', 'Ressource ajoutée au catalogue.');
+    }
+
+    public function updateUserRole(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        // Sécurité : Un admin ne peut pas changer son propre rôle (pour éviter de se bloquer)
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Vous ne pouvez pas modifier votre propre rôle.');
+        }
+
+        $request->validate([
+            'role' => 'required|in:user,manager,admin',
+        ]);
+
+        $user->role = $request->role;
+        $user->save();
+
+        return back()->with('success', "Le rôle de {$user->name} est maintenant : {$user->role}.");
     }
 }

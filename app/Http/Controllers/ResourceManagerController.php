@@ -77,4 +77,43 @@ class ResourceManagerController extends Controller
         return back()->with('success', 'La demande a été rejetée.');
     }
 
+    // Afficher le formulaire d'édition
+    public function edit($id)
+    {
+        $resource = Resource::findOrFail($id);
+        
+        // Sécurité : On vérifie si c'est le manager propriétaire OU un admin
+        if ($resource->manager_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403, "Vous n'avez pas la permission de modifier cette ressource.");
+        }
+
+        return view('manager.resources.edit', compact('resource'));
+    }
+
+    // Enregistrer les modifications
+    public function update(Request $request, $id)
+    {
+        $resource = Resource::findOrFail($id);
+
+        if ($resource->manager_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:available,maintenance,inactive,occupied',
+            'description' => 'nullable|string',
+        ]);
+
+        $resource->update([
+            'status' => $request->status,
+            'description' => $request->description,
+        ]);
+
+        // Redirection intelligente selon le rôle
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('admin.dashboard')->with('success', 'Ressource mise à jour.');
+        }
+        return redirect()->route('manager.dashboard')->with('success', 'Ressource mise à jour.');
+    }
+
 }

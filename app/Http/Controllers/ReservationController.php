@@ -133,8 +133,8 @@ class ReservationController extends Controller
         $reservation = Reservation::findOrFail($id);
         
         // Sécurité : Seul le manager de la ressource peut décider
-        if ($reservation->resource->manager_id !== Auth::id()) {
-            abort(403, "Action non autorisée.");
+       if ($reservation->resource->manager_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403, "Action non autorisée sur cette ressource.");
         }
 
         $messageUser = "";

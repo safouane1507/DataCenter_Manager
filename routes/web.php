@@ -55,10 +55,21 @@ Route::middleware(['auth'])->group(function () {
     // Admin
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
+        Route::post('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle');
+        Route::post('/users/{id}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.role');
+        Route::post('/resources', [AdminController::class, 'storeResource'])->name('admin.resources.store');
+
+        // --- AJOUTS : Routes pour gérer les demandes et réservations en tant qu'Admin ---
         
-        // CORRECTION : Route pour activer/désactiver un utilisateur
-        Route::post('/users/{id}/toggle-status', [App\Http\Controllers\AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle');
-        
-        Route::post('/resources', [App\Http\Controllers\AdminController::class, 'storeResource'])->name('admin.resources.store');
+        // 1. Gérer les Réservations (Accepter/Refuser)
+        Route::post('/reservations/{id}/handle', [ReservationController::class, 'handleRequest'])->name('admin.reservations.handle');
+
+        // 2. Gérer les Demandes sur Mesure (Custom Requests)
+        Route::post('/custom-requests/{id}/approve', [ResourceManagerController::class, 'approveCustom'])->name('admin.custom.approve');
+        Route::post('/custom-requests/{id}/reject', [ResourceManagerController::class, 'rejectCustom'])->name('admin.custom.reject');
     });
+
+    // Paramètres du profil
+    Route::get('/settings', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.settings');
+    Route::post('/settings', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 });
