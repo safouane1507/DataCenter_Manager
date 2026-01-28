@@ -23,6 +23,8 @@ https://github.com/user-attachments/assets/277b569e-59aa-4e78-b76e-1340aef7c5c3
 - **Créateurs :**
   - **Safouane Bousakhra**
   - **Mohamed Reda Benmoussa**
+  - **Ilyas Gourrou**
+  - **Mohamed Abdallaoui Alaoui**
 
 ---
 
