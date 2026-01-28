@@ -13,13 +13,16 @@ class DashboardController extends Controller
 {
     // --- PARTIE PUBLIQUE ---
     public function guestIndex(Request $request) {
-        $resources = collect();
-        if ($request->has('cat')) {
-            $resources = Resource::where('status', 'available')
-                ->where('category', $request->cat)
-                ->get();
+        $query = Resource::where('status', 'available');
+
+        // Filtrage dynamique
+        if ($request->has('cat') && !empty($request->cat)) {
+            $query->where('category', $request->cat);
         }
-        return view('guest.index', compact('resources'));
+
+        $resources = $query->get();
+        
+        return view('resources', compact('resources'));
     }
 
     public function resourceDetail($id) {

@@ -7,8 +7,16 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ResourceManagerController;
 
+//--- PAGE D'ACCUEIL ---
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// 2. Nouvelle page Ressources (Catalogue officiel)
+Route::get('/resources', [DashboardController::class, 'guestIndex'])->name('resources.all');
+
 // --- ACCÈS PUBLIC ---
-Route::get('/', [DashboardController::class, 'guestIndex'])->name('guest.index');
+Route::get('/catalogue', [DashboardController::class, 'guestIndex'])->name('guest.index');
 Route::get('/resources/{id}', [DashboardController::class, 'resourceDetail'])->name('resource.show');
 
 // --- AUTHENTIFICATION ---

@@ -1,0 +1,71 @@
+@extends('layouts.app')
+
+@section('content')
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 800; color: var(--text-primary);">Catalogue</h1>
+            <p style="color: var(--text-muted); margin-top: 5px;">
+                @if(request('cat'))
+                    Filtré par : <strong>{{ request('cat') }}</strong>
+                @else
+                    Toutes les ressources disponibles
+                @endif
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="{{ route('resources.all') }}" class="btn {{ !request('cat') ? 'btn-primary' : 'btn-outline' }}">Tout</a>
+            <a href="{{ route('resources.all', ['cat' => 'Serveur Physique']) }}" class="btn {{ request('cat') == 'Serveur Physique' ? 'btn-primary' : 'btn-outline' }}">Serveurs</a>
+            <a href="{{ route('resources.all', ['cat' => 'Machine Virtuelle']) }}" class="btn {{ request('cat') == 'Machine Virtuelle' ? 'btn-primary' : 'btn-outline' }}">VMs</a>
+            <a href="{{ route('resources.all', ['cat' => 'Stockage']) }}" class="btn {{ request('cat') == 'Stockage' ? 'btn-primary' : 'btn-outline' }}">Stockage</a>
+            <a href="{{ route('resources.all', ['cat' => 'Réseau']) }}" class="btn {{ request('cat') == 'Réseau' ? 'btn-primary' : 'btn-outline' }}">Réseau</a>
+        </div>
+    </div>
+
+    @if($resources->isEmpty())
+        <div style="text-align: center; padding: 80px; background: var(--bg-surface); border-radius: 16px; border: 2px dashed var(--border);">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🔍</div>
+            <h3 style="color: var(--text-primary); margin-bottom: 10px;">Aucun résultat trouvé</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Aucune ressource disponible dans la catégorie "{{ request('cat') }}".</p>
+            <a href="{{ route('resources.all') }}" class="btn btn-primary">Voir tout l'inventaire</a>
+        </div>
+    @else
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px;">
+            @foreach($resources as $resource)
+                <div class="card" style="display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--border); background: var(--bg-surface); border-radius: 12px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">
+                            {{ $resource->category }}
+                        </span>
+                        <span style="font-size: 0.75rem; color: #2ecc71; font-weight: bold; background: rgba(46, 204, 113, 0.1); padding: 2px 8px; border-radius: 10px;">
+                            ● Disponible
+                        </span>
+                    </div>
+                    
+                    <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; color: var(--text-primary);">{{ $resource->label }}</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); flex-grow: 1; margin-bottom: 20px;">
+                        {{ Str::limit($resource->description ?? 'Aucune description', 80) }}
+                    </p>
+                    
+                    <div style="padding-top: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">📍 {{ $resource->location }}</span>
+                        <a href="{{ route('reservations.create', ['resource_id' => $resource->id]) }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">
+                            Réserver
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+</div>
+
+<style>
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        border-color: var(--primary);
+    }
+</style>
+@endsection

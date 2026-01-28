@@ -187,13 +187,13 @@
 
     <nav>
         <div class="dropdown-container">
-            <a href="/" class="nav-link">Ressources ▾</a>
+            <a href="{{ route('resources.all') }}" class="nav-link">Ressources ▾</a>
             <div class="dropdown-menu">
                 <div style="padding: 0 15px 5px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Filtrer par</div>
-                <a href="/?cat=Serveur Physique" class="dropdown-item">🖥️ Serveurs</a>
-                <a href="/?cat=Machine Virtuelle" class="dropdown-item">☁️ Virtuel (VM)</a>
-                <a href="/?cat=Stockage" class="dropdown-item">💾 Stockage</a>
-                <a href="/?cat=Réseau" class="dropdown-item">🌐 Réseau</a>
+                <a href="{{ route('resources.all', ['cat' => 'Serveur Physique']) }}" class="dropdown-item">🖥️ Serveurs</a>
+                <a href="{{ route('resources.all', ['cat' => 'Machine Virtuelle']) }}" class="dropdown-item">☁️ Virtuel (VM)</a>
+                <a href="{{ route('resources.all', ['cat' => 'Stockage']) }}" class="dropdown-item">💾 Stockage</a>
+                <a href="{{ route('resources.all', ['cat' => 'Réseau']) }}" class="dropdown-item">🌐 Réseau</a>
             </div>
         </div>
 

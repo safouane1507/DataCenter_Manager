@@ -76,7 +76,7 @@ class ReservationController extends Controller
             ]);
         }
 
-        return redirect()->route('user.dashboard')->with('success', 'Votre demande est enregistrée et en attente de validation.');
+        return redirect()->route('user.dashboard')->with('success', 'Votre demande de réservation a été envoyée avec succès !');
     }
 
     // --- CONFIGURATION SUR MESURE (CUSTOM REQUESTS) ---

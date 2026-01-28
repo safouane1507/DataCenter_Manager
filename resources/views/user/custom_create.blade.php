@@ -17,6 +17,7 @@
                     <option value="Serveur Physique">Serveur Physique Dédié</option>
                     <option value="VM Haute Performance">Machine Virtuelle (VM)</option>
                     <option value="Stockage Cloud">Baie de Stockage</option>
+                    <option value="Équipement Réseau">Équipement Réseau (Switch/Routeur/Firewall)</option>
                 </select>
             </div>
 

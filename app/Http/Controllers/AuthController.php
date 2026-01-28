@@ -26,19 +26,19 @@ class AuthController extends Controller
             // Redirection selon le rôle
             if (!$user->is_active) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Votre compte est en attente de validation.']);
+                return back()->withErrors(['email' => 'Accès refusé : Votre compte est désactivé ou a été banni par l\'administrateur.']);
             }
 
-            return match($user->role) {
-                'admin' => redirect()->route('admin.dashboard'),
-                'manager' => redirect()->route('manager.dashboard'),
-                'user' => redirect()->route('user.dashboard'),
-                default => redirect('/'),
-            };
+            $request->session()->regenerate();
+
+            // Redirection selon le rôle
+            if ($user->role === 'admin') return redirect()->route('admin.dashboard');
+            if ($user->role === 'manager') return redirect()->route('manager.dashboard');
+            return redirect()->route('user.dashboard');
         }
 
         return back()->withErrors([
-            'email' => 'Identifiants incorrects.',
+            'email' => 'Les identifiants fournis ne correspondent pas à nos enregistrements.',
         ]);
     }
 
@@ -53,17 +53,17 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'guest', // Par défaut
+            'role' => 'user',
             'is_active' => false, // Doit être activé par l'admin
         ]);
 
-        return redirect()->route('login')->with('success', 'Demande envoyée. Attendez la validation de l\'administrateur.');
+        return redirect()->route('login')->with('success', 'Compte créé avec succès ! Un administrateur validera votre demande sous 24h.');
     }
 
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+        return redirect('/login');
     }
 }
