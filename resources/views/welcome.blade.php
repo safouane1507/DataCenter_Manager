@@ -3,135 +3,147 @@
 @section('content')
 
 <style>
-    /* Effet de lueur verte et animation au survol */
-    .feature-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s;
+    /* Style CSS pour le défilement fluide */
+    html { scroll-behavior: smooth; }
+
+    /* Cartes Interactives */
+    .hover-card {
+        background: var(--bg-surface);
         border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 30px;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         position: relative;
         overflow: hidden;
     }
 
-    .feature-card:hover {
-        transform: translateY(-10px);
-        /* Ombre verte (Green Glow) */
-        box-shadow: 0 10px 30px rgba(46, 204, 113, 0.15); 
-        /* Légère teinte verte en fond */
-        background: linear-gradient(145deg, var(--bg-surface), rgba(46, 204, 113, 0.05));
-        border-color: #2ecc71;
+    .hover-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(15, 163, 163, 0.15);
+        border-color: var(--primary);
     }
 
-    /* Icônes animées */
-    .feature-icon {
+    /* Icônes Carrées */
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        background: rgba(15, 163, 163, 0.1);
+        color: var(--primary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
         transition: transform 0.3s ease;
     }
-    .feature-card:hover .feature-icon {
+
+    .hover-card:hover .icon-box {
         transform: scale(1.1) rotate(5deg);
+        background: var(--primary);
+        color: white;
     }
+
+    /* Boutons animés */
+    .btn-anim { transition: all 0.3s ease; }
+    .btn-anim:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+    /* Cartes Étapes */
+    .step-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; }
+    .step-card:hover { background: rgba(255,255,255,0.2); transform: translateY(-5px); }
+    .step-card .icon-box { background: rgba(255,255,255,0.2); color: white; }
+    .step-card:hover .icon-box { background: white; color: var(--primary); transform: scale(1.1); }
 </style>
 
-<section style="text-align: center; padding: 120px 20px 100px; background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-background) 100%); border-bottom: 1px solid var(--border); position: relative;">
-    
-    <div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: var(--primary); opacity: 0.03; border-radius: 50%; filter: blur(100px); pointer-events: none;"></div>
-
-    <div style="max-width: 800px; margin: 0 auto; position: relative; z-index: 1;">
+<section style="text-align: center; padding: 120px 20px 100px; background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-background) 100%); border-bottom: 1px solid var(--border);">
+    <div style="max-width: 900px; margin: 0 auto;">
         <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 24px; color: var(--text-primary); letter-spacing: -1px;">
-            Infrastructure pour <br>
-            <span style="color: var(--primary);">Bâtisseurs & Innovateurs</span>
+            L'Infrastructure pour les <br> <span style="color: var(--primary);">Bâtisseurs de Demain</span>
         </h1>
-        <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 650px; margin: 0 auto 40px auto; line-height: 1.6;">
-            La façon la plus simple de gérer, réserver et déployer vos ressources internes. 
-            Obtenez la puissance nécessaire pour vos projets instantanément.
+        <p style="font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px auto; line-height: 1.6;">
+            Gérez, réservez et déployez vos ressources internes. Des machines virtuelles aux serveurs dédiés, la puissance à portée de clic.
         </p>
-        <div style="display: flex; gap: 15px; justify-content: center;">
-            <a href="{{ route('resources.all') }}" class="btn btn-primary" style="padding: 16px 36px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(15, 163, 163, 0.3);">
-                Explorer l'Inventaire
-            </a>
-            @guest
-                <a href="{{ route('login') }}" class="btn btn-outline" style="padding: 16px 36px; font-size: 1.1rem;">
-                    Espace Membre
-                </a>
-            @endguest
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ route('resources.all') }}" class="btn btn-primary btn-anim" style="padding: 16px 36px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(15, 163, 163, 0.3);">Explorer l'Inventaire</a>
+            @guest <a href="{{ route('login') }}" class="btn btn-outline btn-anim" style="padding: 16px 36px; font-size: 1.1rem;">Se Connecter</a> @endguest
         </div>
+    </div>
+</section>
+
+<section style="padding: 40px 20px; text-align: center; background: var(--bg-background); border-bottom: 1px solid var(--border);">
+    <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 700; margin-bottom: 25px; display: block;">Utilisé par les équipes</span>
+    <div style="display: flex; justify-content: center; gap: 50px; flex-wrap: wrap; opacity: 0.6; filter: grayscale(100%);">
+        <span style="font-weight: 900; font-size: 1.5rem; color: var(--text-primary);">DEV-OPS</span>
+        <span style="font-weight: 900; font-size: 1.5rem; color: var(--text-primary);">DATA-LAB</span>
+        <span style="font-weight: 900; font-size: 1.5rem; color: var(--text-primary);">R&D</span>
+        <span style="font-weight: 900; font-size: 1.5rem; color: var(--text-primary);">DEV-WEB</span>
     </div>
 </section>
 
 <section id="features" style="padding: 100px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border);">
     <div style="max-width: 1100px; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 60px;">
+        <div style="margin-bottom: 60px;">
             <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; color: var(--text-primary);">Pourquoi cette plateforme ?</h2>
-            <p style="font-size: 1.1rem; color: var(--text-muted);">Une gestion centralisée pour réduire les frictions et accélérer le déploiement.</p>
+            <p style="font-size: 1.1rem; color: var(--text-muted);">Centralisez la gestion de votre infrastructure pour réduire les frictions.</p>
         </div>
-        
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
-            <div class="card feature-card" style="padding: 35px; border-radius: 16px;">
-                <div class="feature-icon" style="font-size: 2.5rem; margin-bottom: 20px;">⚡</div>
-                <h3 style="margin-bottom: 15px; font-size: 1.3rem;">Disponibilité Instantanée</h3>
-                <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
-                    Vérifiez l'état en temps réel des serveurs et des machines virtuelles. Plus besoin de deviner si une ressource est libre ou occupée.
-                </p>
-            </div>
-
-            <div class="card feature-card" style="padding: 35px; border-radius: 16px;">
-                <div class="feature-icon" style="font-size: 2.5rem; margin-bottom: 20px;">🛡️</div>
-                <h3 style="margin-bottom: 15px; font-size: 1.3rem;">Accès Sécurisé & Rôles</h3>
-                <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
-                    Un environnement cloisonné où les managers valident les demandes. Chaque utilisateur accède uniquement à ses ressources réservées.
-                </p>
-            </div>
-
-            <div class="card feature-card" style="padding: 35px; border-radius: 16px;">
-                <div class="feature-icon" style="font-size: 2.5rem; margin-bottom: 20px;">📊</div>
-                <h3 style="margin-bottom: 15px; font-size: 1.3rem;">Pilotage Centralisé</h3>
-                <p style="font-size: 1rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
-                    Suivez vos réservations en cours, consultez l'historique de vos projets et recevez des notifications, le tout sur un seul écran.
-                </p>
-            </div>
+            <div class="hover-card"><div class="icon-box">⚡</div><h3 style="margin-bottom: 15px; color: var(--text-primary);">Disponibilité Instantanée</h3><p style="color: var(--text-muted);">Vérifiez l'état en temps réel des ressources.</p></div>
+            <div class="hover-card"><div class="icon-box">🛡️</div><h3 style="margin-bottom: 15px; color: var(--text-primary);">Accès Sécurisé</h3><p style="color: var(--text-muted);">Environnement cloisonné et validé par rôles.</p></div>
+            <div class="hover-card"><div class="icon-box">📊</div><h3 style="margin-bottom: 15px; color: var(--text-primary);">Pilotage Centralisé</h3><p style="color: var(--text-muted);">Suivez réservations et historique sur un écran.</p></div>
         </div>
     </div>
 </section>
 
 <section id="definitions" style="padding: 100px 20px; background: var(--bg-background); border-bottom: 1px solid var(--border);">
-    <div style="max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 80px; align-items: center;">
-        
+    <div style="max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 60px; align-items: center;">
         <div>
             <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Comprendre nos Ressources</h2>
-            <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 35px;">
-                Vous ne savez pas exactement de quel équipement vous avez besoin pour votre projet ?<br>
-                Voici un guide rapide des technologies disponibles dans notre DataCenter.
-            </p>
-            <a href="{{ route('resources.all') }}" class="btn btn-outline" style="padding: 12px 30px; font-weight: 600;">
-                Voir tout le catalogue &rarr;
-            </a>
+            <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 35px;">Guide rapide des technologies disponibles.</p>
+            <a href="{{ route('resources.all') }}" class="btn btn-outline btn-anim" style="padding: 12px 30px; font-weight: 600;">Catalogue &rarr;</a>
         </div>
-
-        <div style="display: grid; gap: 25px;">
-            <div class="feature-card" style="padding: 25px; border-radius: 12px; background: var(--bg-surface); border-left: 5px solid var(--primary);">
-                <h4 style="margin: 0 0 8px 0; font-size: 1.2rem; color: var(--text-primary);">☁️ Machine Virtuelle (VM)</h4>
-                <p style="font-size: 0.95rem; color: var(--text-muted); margin: 0;">Un ordinateur simulé par logiciel. Idéal pour le développement, les tests et les applications web légères.</p>
+        <div style="display: grid; gap: 20px;">
+            <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
+                <div class="icon-box" style="margin-bottom: 0; min-width: 60px;">☁️</div><div><h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Machine Virtuelle</h4><p style="color: var(--text-muted); margin: 0;">Pour dev et tests. Déploiement rapide.</p></div>
             </div>
-
-            <div class="feature-card" style="padding: 25px; border-radius: 12px; background: var(--bg-surface); border-left: 5px solid var(--primary);">
-                <h4 style="margin: 0 0 8px 0; font-size: 1.2rem; color: var(--text-primary);">🖥️ Serveur Physique (Bare Metal)</h4>
-                <p style="font-size: 0.95rem; color: var(--text-muted); margin: 0;">La puissance brute du matériel sans couche de virtualisation. Pour les calculs intensifs et les grosses bases de données.</p>
+            <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
+                <div class="icon-box" style="margin-bottom: 0; min-width: 60px;">🖥️</div><div><h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Serveur Physique</h4><p style="color: var(--text-muted); margin: 0;">Puissance brute pour calculs intensifs.</p></div>
             </div>
-
-            <div class="feature-card" style="padding: 25px; border-radius: 12px; background: var(--bg-surface); border-left: 5px solid var(--primary);">
-                <h4 style="margin: 0 0 8px 0; font-size: 1.2rem; color: var(--text-primary);">💾 Stockage Bloc (SAN/NAS)</h4>
-                <p style="font-size: 0.95rem; color: var(--text-muted); margin: 0;">Espace disque haute performance et évolutif. Attachez-le à vos VMs pour stocker vos données de manière persistante.</p>
+            <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
+                <div class="icon-box" style="margin-bottom: 0; min-width: 60px;">💾</div><div><h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Stockage Bloc</h4><p style="color: var(--text-muted); margin: 0;">Données persistantes haute performance.</p></div>
             </div>
         </div>
     </div>
 </section>
 
-<section style="padding: 120px 20px; text-align: center; background: var(--bg-surface);">
-    <div style="max-width: 700px; margin: 0 auto; padding: 60px; border-radius: 24px; background: linear-gradient(135deg, var(--bg-background) 0%, var(--bg-surface) 100%); border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.05);">
-        <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; color: var(--text-primary);">Besoin d'une configuration spéciale ?</h2>
-        <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; line-height: 1.6;">
-            Notre équipe technique est disponible pour vous accompagner dans le dimensionnement de votre infrastructure sur mesure.
-        </p>
-        <a href="mailto:support@datacenter.com" class="btn btn-primary" style="padding: 16px 40px; font-weight: bold; font-size: 1.1rem; border-radius: 50px;">
-            Contacter le Support Technique
-        </a>
+<section style="padding: 100px 20px; background: var(--primary); color: white; text-align: center;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; color: white;">Comment ça marche ?</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; text-align: left; margin-top: 50px;">
+            <div class="hover-card step-card"><div class="icon-box">01</div><h3 style="color: white;">Inscription</h3><p style="opacity: 0.9;">Créez un compte et parcourez le catalogue.</p></div>
+            <div class="hover-card step-card"><div class="icon-box">02</div><h3 style="color: white;">Demande</h3><p style="opacity: 0.9;">Réservez vos dates. Validé par un Manager.</p></div>
+            <div class="hover-card step-card"><div class="icon-box">03</div><h3 style="color: white;">Accès</h3><p style="opacity: 0.9;">Recevez vos accès et commencez à travailler.</p></div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" style="padding: 120px 20px; text-align: center; background: var(--bg-surface);">
+    <div class="hover-card" style="max-width: 700px; margin: 0 auto; padding: 60px; text-align: center; align-items: center;">
+        <div class="icon-box">✉️</div>
+        <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; color: var(--text-primary);">Besoin d'aide ?</h2>
+        <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px;">Une question ? Notre équipe vous répond.</p>
+        
+        @if(session('success')) <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 25px; width: 100%;">{{ session('success') }}</div> @endif
+
+        <form action="{{ route('contact.send') }}" method="POST" style="width: 100%; text-align: left; display: grid; gap: 20px;">
+            @csrf
+            <div><label style="font-weight: 600; color: var(--text-primary);">Email</label><input type="email" name="email" required style="width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-background); color: var(--text-primary);"></div>
+            <div><label style="font-weight: 600; color: var(--text-primary);">Message</label><textarea name="message" rows="5" required style="width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-background); color: var(--text-primary);"></textarea></div>
+            <button type="submit" class="btn btn-primary btn-anim" style="padding: 16px 40px; border-radius: 8px; width: 100%;">Envoyer le message ✉️</button>
+        </form>
     </div>
 </section>
 

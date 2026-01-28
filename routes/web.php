@@ -31,6 +31,9 @@ Route::post('/register-request', [AuthController::class, 'register']);
 // --- ESPACES SÉCURISÉS ---
 Route::middleware(['auth'])->group(function () {
     
+    // Route Publique pour le Contact Email
+    Route::post('/contact-support', [App\Http\Controllers\IncidentController::class, 'sendContactEmail'])->name('contact.send');
+    
     // User
     Route::middleware(['role:user'])->prefix('user')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
@@ -40,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
         // Routes pour demandes personnalisées (Custom Requests)
         Route::get('/custom-request', [ReservationController::class, 'createCustom'])->name('user.custom.create');
         Route::post('/custom-request', [ReservationController::class, 'storeCustom'])->name('user.custom.store');
+        Route::post('/incidents', [App\Http\Controllers\IncidentController::class, 'store'])->name('incidents.store');
     });
 
     // Manager
@@ -57,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
         // Routes pour gérer les demandes sur mesure (Custom Requests)
         Route::post('/custom-requests/{id}/approve', [App\Http\Controllers\ResourceManagerController::class, 'approveCustom'])->name('manager.custom.approve');
         Route::post('/custom-requests/{id}/reject', [App\Http\Controllers\ResourceManagerController::class, 'rejectCustom'])->name('manager.custom.reject');
+        Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('incidents.resolve');
     });
 
     
@@ -75,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
         // 2. Gérer les Demandes sur Mesure (Custom Requests)
         Route::post('/custom-requests/{id}/approve', [ResourceManagerController::class, 'approveCustom'])->name('admin.custom.approve');
         Route::post('/custom-requests/{id}/reject', [ResourceManagerController::class, 'rejectCustom'])->name('admin.custom.reject');
+        Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('admin.incidents.resolve');
     });
 
     // Paramètres du profil

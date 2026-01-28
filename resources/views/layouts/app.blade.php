@@ -149,7 +149,7 @@
         /* --- BOUTONS AND CARDS    THE PROBLEM IS HNA --- */
         .btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; }
         .btn-outline { border: 1px solid var(--border); color: var(--text-primary); background: transparent; }
-        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary { background: var(--primary) !important; color: #fff !important; border: none; }
         .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
 
         /* --- SALUTATION --- */
@@ -186,15 +186,30 @@
     <a href="/" class="logo">Data<span>Center</span></a>
 
     <nav>
-        <div class="dropdown-container">
-            <a href="{{ route('resources.all') }}" class="nav-link">Ressources ▾</a>
-            <div class="dropdown-menu">
-                <div style="padding: 0 15px 5px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Filtrer par</div>
-                <a href="{{ route('resources.all', ['cat' => 'Serveur Physique']) }}" class="dropdown-item">🖥️ Serveurs</a>
-                <a href="{{ route('resources.all', ['cat' => 'Machine Virtuelle']) }}" class="dropdown-item">☁️ Virtuel (VM)</a>
-                <a href="{{ route('resources.all', ['cat' => 'Stockage']) }}" class="dropdown-item">💾 Stockage</a>
-                <a href="{{ route('resources.all', ['cat' => 'Réseau']) }}" class="dropdown-item">🌐 Réseau</a>
+        <div class="nav-links" style="display: flex; align-items: center; gap: 20px;">
+            <div class="dropdown-container">
+                <a href="{{ route('resources.all') }}" class="nav-link">Ressources ▾</a>
+                <div class="dropdown-menu">
+                    <div style="padding: 0 15px 5px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Filtrer par</div>
+                    <a href="{{ route('resources.all', ['cat' => 'Serveur Physique']) }}" class="dropdown-item">🖥️ Serveurs</a>
+                    <a href="{{ route('resources.all', ['cat' => 'Machine Virtuelle']) }}" class="dropdown-item">☁️ Virtuel (VM)</a>
+                    <a href="{{ route('resources.all', ['cat' => 'Stockage']) }}" class="dropdown-item">💾 Stockage</a>
+                    <a href="{{ route('resources.all', ['cat' => 'Réseau']) }}" class="dropdown-item">🌐 Réseau</a>
+                </div>
             </div>
+
+            @if(request()->routeIs('home'))
+                <a href="#features" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.3s;">
+                    Features
+                </a>
+                <a href="#definitions" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.3s;">
+                    Définitions
+                </a>
+                <a href="#contact" class="nav-link" style="color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.3s;">
+                    Contact Us
+                </a>
+            @endif
+
         </div>
 
         <button id="theme-toggle" title="Changer de mode">
@@ -239,8 +254,22 @@
     @yield('content')
 </main>
 
-<footer style="text-align: center; padding: 40px; color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 60px;">
-    &copy; 2026 DataCenter Management System By IDAI Studens.
+<footer style="padding: 50px 20px; text-align: center; background: var(--bg-background); border-top: 1px solid var(--border);">
+    
+   @if(request()->routeIs('home'))
+        <div style="margin-bottom: 40px; width: 100%; text-align: center;">
+            <img src="{{ asset('images/fst.png') }}" alt="Logo FSTT" 
+                 style="width: 100%; max-width: 1100px; height: auto; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
+        
+            <div style="font-weight: 800; color: var(--text-primary); letter-spacing: 1.5px; font-size: 1.1rem; text-transform: uppercase;">
+                FSTT - DÉPARTEMENT D'INFORMATIQUE - IDAI 2025-2026
+            </div>
+        </div>
+    @endif
+
+    <div style="color: var(--text-muted); font-size: 0.85rem;">
+        &copy; {{ date('Y') }} DataCenter Management System. Tous droits réservés.
+    </div>
 </footer>
 
 <script>

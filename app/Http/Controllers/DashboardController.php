@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Resource;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Models\Incident;
 
 class DashboardController extends Controller
 {
@@ -41,8 +42,9 @@ class DashboardController extends Controller
         
         $myReservations = $user->reservations()->latest()->get();
         $myCustomRequests = DB::table('custom_requests')->where('user_id', $user->id)->latest()->get();
+        $myIncidents = Incident::where('user_id', $user->id)->latest()->get();
 
-        return view('user.dashboard', compact('myReservations', 'myCustomRequests'));
+        return view('user.dashboard', compact('myReservations', 'myCustomRequests', 'myIncidents'));
     }
 
     // --- PARTIE MANAGER ---
@@ -62,12 +64,15 @@ class DashboardController extends Controller
             ->select('custom_requests.*', 'users.name', 'users.email')
             ->where('custom_requests.status', 'pending')
             ->get();
+
+            // Récupérer les incidents non résolus
+            $incidents = Incident::where('status', 'open')->with('user')->get();
         
-        return view('manager.dashboard', compact('managedResources', 'pendingReservations', 'customRequests'));
+        return view('manager.dashboard', compact('managedResources', 'pendingReservations', 'customRequests', 'incidents'));
     }
 
-    // --- PARTIE ADMIN (CORRIGÉE ET RESTAURÉE) ---
-    public function adminDashboard() {
+    // --- PARTIE ADMIN (CORRIGÉE ET RESTAURÉE)(AVEC STATS GRAPHIQUES & HISTORIQUE FILTRÉ) ---
+    public function adminDashboard(Request $request) {
         // 1. RESTAURATION DES STATISTIQUES
         $stats = [
             'users_count' => User::count(),
@@ -75,13 +80,35 @@ class DashboardController extends Controller
             'pending_reservations' => Reservation::where('status', 'pending')->count(),
         ];
 
-        // 2. Gestion des utilisateurs (Tout le monde sauf soi-même)
+        // 2. Données pour les GRAPHIQUES (Chart.js)
+        $chartData = [
+            'status' => Reservation::select('status', DB::raw('count(*) as total')) ->groupBy('status')->pluck('total', 'status')->toArray(),
+            'resources' => Resource::select('category', DB::raw('count(*) as total')) ->groupBy('category')->pluck('total', 'category')->toArray(),
+        ];
+        // 3. HISTORIQUE FILTRÉ
+        $historyQuery = Reservation::with(['user', 'resource'])->latest();
+
+        // Filtre par Date
+        if ($request->filled('date_start')) {
+            $historyQuery->whereDate('created_at', '>=', $request->date_start);
+        }
+        if ($request->filled('date_end')) {
+            $historyQuery->whereDate('created_at', '<=', $request->date_end);
+        }
+        // Filtre par État
+        if ($request->filled('filter_status')) {
+            $historyQuery->where('status', $request->filter_status);
+        }
+
+        $history = $historyQuery->take(50)->get(); // On limite aux 50 derniers résultats
+
+        // Gestion des utilisateurs (Tout le monde sauf soi-même)
         $allUsers = User::where('id', '!=', Auth::id())->get();
         
-        // 3. Liste des managers (pour l'ajout de ressource)
+        //  Liste des managers (pour l'ajout de ressource)
         $managers = User::where('role', 'manager')->orWhere('role', 'admin')->get();
         
-        // 4. RESTAURATION DES RÉSERVATIONS EN ATTENTE
+        //  RESTAURATION DES RÉSERVATIONS EN ATTENTE
         $pendingReservations = Reservation::where('status', 'pending')
             ->with(['user', 'resource'])
             ->orderBy('created_at', 'asc')
@@ -94,7 +121,10 @@ class DashboardController extends Controller
             ->where('custom_requests.status', 'pending')
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'allUsers', 'managers', 'pendingReservations', 'customRequests'));
+    
+        $incidents = Incident::where('status', 'open')->with('user')->get();    
+
+        return view('admin.dashboard', compact('stats', 'chartData','history', 'allUsers', 'managers', 'pendingReservations', 'customRequests', 'incidents'));
     }
 
     // --- GESTION RESSOURCES (Admin & Manager) ---
