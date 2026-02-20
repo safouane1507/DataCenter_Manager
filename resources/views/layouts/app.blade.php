@@ -251,6 +251,137 @@
     </nav>
 </header>
 
+{{-- ============================================================
+     NOTIFICATION TOAST — shown once per login session
+     ============================================================ --}}
+@auth
+@php
+    $unreadNotifs = \App\Models\Notification::where('user_id', Auth::id())
+        ->where('is_read', false)
+        ->latest()
+        ->get();
+@endphp
+@if($unreadNotifs->isNotEmpty())
+<div id="notif-toast" style="
+    position: fixed; top: 80px; right: 20px; z-index: 99999;
+    width: 360px; max-width: 95vw;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+    animation: notifSlideIn 0.4s cubic-bezier(.17,.67,.35,1.1);
+    overflow: hidden;
+">
+    {{-- Header --}}
+    <div style="display:flex; justify-content:space-between; align-items:center;
+                padding: 14px 18px; border-bottom: 1px solid var(--border);
+                background: var(--bg-background);">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.3rem;">🔔</span>
+            <div>
+                <div style="font-weight:800; font-size:0.95rem; color:var(--text-primary);">
+                    Nouveaux messages
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">
+                    {{ $unreadNotifs->count() }} notification{{ $unreadNotifs->count() > 1 ? 's' : '' }} non lue{{ $unreadNotifs->count() > 1 ? 's' : '' }}
+                </div>
+            </div>
+        </div>
+        <button onclick="dismissNotifToast()" title="Fermer" style="
+            background: transparent; border: none; cursor: pointer;
+            font-size: 1.2rem; color: var(--text-muted); padding: 4px;
+            border-radius: 50%; transition: background 0.2s;
+        ">✕</button>
+    </div>
+
+    {{-- List --}}
+    <div style="max-height: 300px; overflow-y: auto;">
+        @foreach($unreadNotifs as $notif)
+        <div style="padding: 12px 18px; border-bottom: 1px solid var(--border); display:flex; gap:10px; align-items:flex-start;">
+            <span style="font-size:1.1rem; margin-top:2px;">
+                @if(str_contains($notif->message, '✅')) ✅
+                @elseif(str_contains($notif->message, '❌')) ❌
+                @elseif(str_contains($notif->message, '⏳')) ⏳
+                @elseif(str_contains($notif->message, '🔵')) 🔵
+                @elseif(str_contains($notif->message, '📩')) 📩
+                @elseif(str_contains($notif->message, '🔧')) 🔧
+                @else 💬
+                @endif
+            </span>
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:0.85rem; color:var(--text-primary); line-height:1.4;">
+                    {{ $notif->message }}
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">
+                    {{ $notif->created_at->diffForHumans() }}
+                </div>
+            </div>
+            @if($notif->link)
+            <a href="{{ $notif->link }}" style="font-size:0.75rem; color:var(--primary); white-space:nowrap; font-weight:600; text-decoration:none; margin-top:3px;">Voir →</a>
+            @endif
+        </div>
+        @endforeach
+    </div>
+
+    {{-- Footer --}}
+    <div style="padding: 10px 18px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-background);">
+        <span id="notif-timer" style="font-size:0.75rem; color:var(--text-muted);">Fermeture auto dans <b id="notif-countdown">8</b>s</span>
+        <button onclick="dismissNotifToast()" style="
+            background: var(--primary); color: white; border: none;
+            padding: 6px 16px; border-radius: 8px; cursor: pointer;
+            font-weight: 700; font-size: 0.82rem;
+        ">Marquer comme lu ✓</button>
+    </div>
+</div>
+
+<style>
+@keyframes notifSlideIn {
+    from { opacity:0; transform: translateY(-20px) scale(0.95); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes notifSlideOut {
+    from { opacity:1; transform: translateY(0); }
+    to   { opacity:0; transform: translateY(-20px); }
+}
+</style>
+
+<script>
+(function() {
+    let countdown = 8;
+    const countdownEl = document.getElementById('notif-countdown');
+    const toast = document.getElementById('notif-toast');
+
+    // Countdown timer
+    const timer = setInterval(() => {
+        countdown--;
+        if (countdownEl) countdownEl.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(timer);
+            dismissNotifToast();
+        }
+    }, 1000);
+
+    window.dismissNotifToast = function() {
+        clearInterval(timer);
+        if (!toast) return;
+        toast.style.animation = 'notifSlideOut 0.3s ease forwards';
+        setTimeout(() => { toast.remove(); }, 320);
+
+        // Mark all as read via AJAX
+        fetch('{{ route('notifications.markRead') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        });
+    };
+})();
+</script>
+@endif
+@endauth
+
 <main class="container">
     @yield('content')
 </main>
@@ -297,5 +428,6 @@
         }
     });
 </script>
+@yield('scripts')
 </body>
 </html>

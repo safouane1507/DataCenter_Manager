@@ -12,9 +12,19 @@ use App\Models\Incident;
 
 class DashboardController extends Controller
 {
+    // --- NOTIFICATIONS ---
+    public function markNotificationsRead()
+    {
+        \App\Models\Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['ok' => true]);
+    }
+
     // --- PARTIE PUBLIQUE ---
     public function guestIndex(Request $request) {
-        $query = Resource::where('status', 'available');
+        $query = Resource::with(['unavailabilityPeriods', 'reservations.user', 'manager']);
 
         // Filtrage dynamique
         if ($request->has('cat') && !empty($request->cat)) {
@@ -27,7 +37,11 @@ class DashboardController extends Controller
     }
 
     public function resourceDetail($id) {
-        $resource = Resource::findOrFail($id);
+        $resource = Resource::with([
+            'unavailabilityPeriods.creator',
+            'reservations.user',
+            'manager',
+        ])->findOrFail($id);
         return view('guest.resource_detail', compact('resource'));
     }
 
@@ -67,8 +81,11 @@ class DashboardController extends Controller
 
             // Récupérer les incidents non résolus
             $incidents = Incident::where('status', 'open')->with('user')->get();
+
+            // Récupérer les messages d'aide
+            $helpMessages = \App\Models\ContactMessage::orderBy('is_read', 'asc')->orderBy('created_at', 'desc')->get();
         
-        return view('manager.dashboard', compact('managedResources', 'pendingReservations', 'customRequests', 'incidents'));
+        return view('manager.dashboard', compact('managedResources', 'pendingReservations', 'customRequests', 'incidents', 'helpMessages'));
     }
 
     // --- PARTIE ADMIN (CORRIGÉE ET RESTAURÉE)(AVEC STATS GRAPHIQUES & HISTORIQUE FILTRÉ) ---
@@ -124,7 +141,10 @@ class DashboardController extends Controller
     
         $incidents = Incident::where('status', 'open')->with('user')->get();    
 
-        return view('admin.dashboard', compact('stats', 'chartData','history', 'allUsers', 'managers', 'pendingReservations', 'customRequests', 'incidents'));
+        // Récupérer les messages d'aide
+        $helpMessages = \App\Models\ContactMessage::orderBy('is_read', 'asc')->orderBy('created_at', 'desc')->get();
+
+        return view('admin.dashboard', compact('stats', 'chartData','history', 'allUsers', 'managers', 'pendingReservations', 'customRequests', 'incidents', 'helpMessages'));
     }
 
     // --- GESTION RESSOURCES (Admin & Manager) ---

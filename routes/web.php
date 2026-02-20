@@ -31,7 +31,10 @@ Route::post('/register-request', [AuthController::class, 'register']);
 
 // --- ESPACES SÉCURISÉS ---
 Route::middleware(['auth'])->group(function () {
-    
+
+    // Notifications — accessible by all authenticated users
+    Route::post('/notifications/mark-read', [DashboardController::class, 'markNotificationsRead'])->name('notifications.markRead');
+
     // User
     Route::middleware(['role:user'])->prefix('user')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'userDashboard'])->name('user.dashboard');
@@ -60,6 +63,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/custom-requests/{id}/approve', [App\Http\Controllers\ResourceManagerController::class, 'approveCustom'])->name('manager.custom.approve');
         Route::post('/custom-requests/{id}/reject', [App\Http\Controllers\ResourceManagerController::class, 'rejectCustom'])->name('manager.custom.reject');
         Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('incidents.resolve');
+        // Route pour marquer les messages d'aide comme lus
+        Route::post('/contact-messages/{id}/read', [App\Http\Controllers\IncidentController::class, 'markMessageRead'])->name('manager.messages.read');
+
+        // Gestion des périodes d'indisponibilité
+        Route::post('/resources/{id}/unavailability', [ResourceManagerController::class, 'addUnavailability'])->name('manager.unavailability.add');
+        Route::delete('/unavailability/{id}', [ResourceManagerController::class, 'removeUnavailability'])->name('manager.unavailability.remove');
     });
 
     
@@ -79,6 +88,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/custom-requests/{id}/approve', [ResourceManagerController::class, 'approveCustom'])->name('admin.custom.approve');
         Route::post('/custom-requests/{id}/reject', [ResourceManagerController::class, 'rejectCustom'])->name('admin.custom.reject');
         Route::post('/incidents/{id}/resolve', [App\Http\Controllers\IncidentController::class, 'resolve'])->name('admin.incidents.resolve');
+        // Route pour marquer les messages d'aide comme lus
+        Route::post('/contact-messages/{id}/read', [App\Http\Controllers\IncidentController::class, 'markMessageRead'])->name('admin.messages.read');
     });
 
     // Paramètres du profil

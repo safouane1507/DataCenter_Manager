@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Resource;
+use App\Models\UnavailabilityPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -63,14 +64,24 @@ class ResourceManagerController extends Controller
     }
 
     // Rejeter la demande
-    public function rejectCustom($id) {
-        $request = DB::table('custom_requests')->where('id', $id)->first();
+    public function rejectCustom(Request $request, $id) {
+        $request->validate([
+            'manager_feedback' => 'required|string|min:5|max:500',
+        ], [
+            'manager_feedback.required' => 'Le motif du refus est obligatoire.',
+            'manager_feedback.min'      => 'Le motif doit comporter au moins 5 caractères.',
+        ]);
 
-        DB::table('custom_requests')->where('id', $id)->update(['status' => 'rejected']);
+        $custom = DB::table('custom_requests')->where('id', $id)->first();
+
+        DB::table('custom_requests')->where('id', $id)->update([
+            'status'           => 'rejected',
+            'manager_feedback' => $request->manager_feedback,
+        ]);
 
         Notification::create([
-            'user_id' => $request->user_id,
-            'message' => "❌ Votre demande de configuration pour {$request->type} a été refusée.",
+            'user_id' => $custom->user_id,
+            'message' => "❌ Votre demande de configuration pour {$custom->type} a été refusée. Motif : " . $request->manager_feedback,
             'link' => route('user.dashboard'),
         ]);
 
@@ -114,6 +125,48 @@ class ResourceManagerController extends Controller
             return redirect()->route('admin.dashboard')->with('success', 'Ressource mise à jour.');
         }
         return redirect()->route('manager.dashboard')->with('success', 'Ressource mise à jour.');
+    }
+
+    // Ajouter une période d'indisponibilité
+    public function addUnavailability(Request $request, $id)
+    {
+        $resource = Resource::findOrFail($id);
+
+        if ($resource->manager_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'reason'     => 'required|string|max:500',
+            'type'       => 'required|in:maintenance,panne,réservé,autre',
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after:start_date',
+        ]);
+
+        UnavailabilityPeriod::create([
+            'resource_id' => $resource->id,
+            'created_by'  => Auth::id(),
+            'reason'      => $request->reason,
+            'type'        => $request->type,
+            'start_date'  => $request->start_date,
+            'end_date'    => $request->end_date,
+        ]);
+
+        return back()->with('success', 'Période d\'indisponibilité ajoutée.');
+    }
+
+    // Supprimer une période d'indisponibilité
+    public function removeUnavailability($id)
+    {
+        $period = UnavailabilityPeriod::findOrFail($id);
+        $resource = $period->resource;
+
+        if ($resource->manager_id !== Auth::id() && Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $period->delete();
+        return back()->with('success', 'Période supprimée.');
     }
 
 }

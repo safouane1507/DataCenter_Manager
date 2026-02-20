@@ -19,15 +19,24 @@ class ReservationController extends Controller
      */
     public function create(Request $request)
     {
-        // On récupère l'ID s'il est passé dans l'URL
         $selectedResource = null;
+        $bookedSlots = collect();
+
         if ($request->has('resource_id')) {
             $selectedResource = Resource::find($request->resource_id);
+
+            if ($selectedResource) {
+                // Load all active/pending reservations for this resource to display on the form
+                $bookedSlots = Reservation::where('resource_id', $selectedResource->id)
+                    ->whereIn('status', ['pending', 'approved', 'active'])
+                    ->where('end_date', '>', now())
+                    ->orderBy('start_date')
+                    ->get(['start_date', 'end_date', 'status']);
+            }
         }
 
-        // Propose uniquement les ressources marquées comme 'available'
         $resources = Resource::where('status', 'available')->get();
-        return view('user.reservations.create', compact('resources', 'selectedResource'));
+        return view('user.reservations.create', compact('resources', 'selectedResource', 'bookedSlots'));
     }
 
     /**
@@ -40,21 +49,30 @@ class ReservationController extends Controller
             'start_date' => 'required|date|after:now',
             'end_date' => 'required|date|after:start_date',
             'justification' => 'required|string|max:500',
+        ], [
+            'start_date.after' => 'La date de début doit être ultérieure à maintenant.',
+            'end_date.after' => 'La date de fin doit être après la date de début.',
+            'resource_id.required' => 'Veuillez sélectionner une ressource.',
+            'justification.required' => 'Le motif est obligatoire.',
         ]);
 
-        // Vérification des conflits (Overlapping)
+        // Vérification des conflits — bloque pending + approved + active
         $conflit = Reservation::where('resource_id', $request->resource_id)
-            ->whereIn('status', ['approved', 'active'])
+            ->whereIn('status', ['pending', 'approved', 'active'])
             ->where(function ($query) use ($request) {
                 $query->where('start_date', '<', $request->end_date)
                       ->where('end_date', '>', $request->start_date);
             })
-            ->exists();
+            ->first();
 
         if ($conflit) {
+            $statusLabels = ['pending' => 'en attente de validation', 'approved' => 'approuvée', 'active' => 'en cours'];
+            $label        = $statusLabels[$conflit->status] ?? $conflit->status;
+            $start        = \Carbon\Carbon::parse($conflit->start_date)->format('d/m/Y H:i');
+            $end          = \Carbon\Carbon::parse($conflit->end_date)->format('d/m/Y H:i');
             return back()
                 ->withInput()
-                ->withErrors(['resource_id' => 'Cette ressource est déjà réservée sur ce créneau horaire.']);
+                ->withErrors(['dates' => "⛔ Ce créneau est déjà occupé par une réservation {$label} du {$start} au {$end}."]);
         }
 
         Reservation::create([
@@ -101,6 +119,12 @@ class ReservationController extends Controller
             'ram' => 'required|string',
             'storage' => 'required|string',
             'justification' => 'required|string|max:1000',
+            'start_date' => 'required|date|after:now',
+            'end_date' => 'required|date|after:start_date',
+        ], [
+            'start_date.after' => 'La date de début doit être ultérieure à maintenant.',
+            'end_date.after' => 'La date de fin doit être après la date de début.',
+            'justification.required' => 'La justification est obligatoire.',
         ]);
 
         // Insertion en base de données
@@ -111,6 +135,8 @@ class ReservationController extends Controller
             'ram' => $request->ram,
             'storage' => $request->storage,
             'justification' => $request->justification,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
             'status' => 'pending',
             'created_at' => now(),
             'updated_at' => now(),
@@ -143,6 +169,16 @@ class ReservationController extends Controller
             abort(403, "Action non autorisée sur cette ressource.");
         }
 
+        // Validation du motif de refus si action = reject
+        if ($request->action === 'reject') {
+            $request->validate([
+                'manager_feedback' => 'required|string|min:5|max:500',
+            ], [
+                'manager_feedback.required' => 'Le motif du refus est obligatoire.',
+                'manager_feedback.min'      => 'Le motif doit comporter au moins 5 caractères.',
+            ]);
+        }
+
         $messageUser = "";
 
         if ($request->action === 'approve') {
@@ -151,10 +187,10 @@ class ReservationController extends Controller
             
         } elseif ($request->action === 'reject') {
             $reservation->update([
-                'status' => 'rejected',
-                'manager_feedback' => 'Demande refusée par le responsable.'
+                'status'           => 'rejected',
+                'manager_feedback' => $request->manager_feedback,
             ]);
-            $messageUser = "❌ Votre réservation pour " . $reservation->resource->label . " a été refusée.";
+            $messageUser = "❌ Votre réservation pour " . $reservation->resource->label . " a été refusée. Motif : " . $request->manager_feedback;
         }
 
         // Notification à l'utilisateur

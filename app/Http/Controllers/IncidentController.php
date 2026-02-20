@@ -30,18 +30,23 @@ class IncidentController extends Controller
         return back()->with('success', 'Incident marqué comme résolu.');
     }
 
-    // Envoyer un email depuis la page d'accueil (Public)
+    // Envoyer un message d'aide (Database)
     public function sendContactEmail(Request $request) {
         $request->validate(['email' => 'required|email', 'message' => 'required']);
 
-        // Envoi réel
-        try {
-            Mail::to(env('ADMIN_EMAIL', 'admin@example.com'))
-                ->send(new ContactSupport($request->all()));
-            
-            return back()->with('success', 'Votre message a bien été envoyé à notre équipe !');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Erreur lors de l\'envoi : ' . $e->getMessage());
-        }
+        \App\Models\ContactMessage::create([
+            'email' => $request->email,
+            'message' => $request->message,
+            'is_read' => false,
+        ]);
+
+        return back()->with('success', 'Votre message a bien été envoyé à notre équipe !');
+    }
+
+    // Marquer un message d'aide comme lu
+    public function markMessageRead($id) {
+        $msg = \App\Models\ContactMessage::findOrFail($id);
+        $msg->update(['is_read' => true]);
+        return back()->with('success', 'Message marqué comme lu.');
     }
 }

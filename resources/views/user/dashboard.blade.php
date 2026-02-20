@@ -40,11 +40,25 @@
                         <td style="padding: 10px; font-weight: 600;">{{ $custom->type }}</td>
                         <td style="padding: 10px; font-size: 0.85rem;">CPU: {{ $custom->cpu }} | RAM: {{ $custom->ram }}</td>
                         <td style="padding: 10px;">
-                            <span style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; 
-                                background: {{ $custom->status == 'pending' ? '#fff3e0' : ($custom->status == 'approved' ? '#e8f5e9' : '#ffebee') }}; 
-                                color: {{ $custom->status == 'pending' ? '#ef6c00' : ($custom->status == 'approved' ? '#2e7d32' : '#c62828') }};">
-                                {{ $custom->status == 'pending' ? 'En attente' : ($custom->status == 'approved' ? 'Approuvé' : 'Refusé') }}
-                            </span>
+                            @php
+                                $csStyles = [
+                                    'pending'  => ['label'=>'⏳ En attente', 'color'=>'#e67e22', 'bg'=>'rgba(230,126,34,0.1)'],
+                                    'approved' => ['label'=>'✅ Approuvé',   'color'=>'#27ae60', 'bg'=>'rgba(39,174,96,0.1)'],
+                                    'rejected' => ['label'=>'❌ Refusé',     'color'=>'#e74c3c', 'bg'=>'rgba(231,76,60,0.1)'],
+                                ];
+                                $cs = $csStyles[$custom->status] ?? ['label'=>$custom->status,'color'=>'#aaa','bg'=>'#eee'];
+                            @endphp
+                            <div style="display:inline-flex; align-items:center; gap:6px;">
+                                <span style="font-weight:700; font-size:0.82rem; padding:3px 10px; border-radius:20px; color:{{ $cs['color'] }}; background:{{ $cs['bg'] }};">
+                                    {{ $cs['label'] }}
+                                </span>
+                                @if($custom->status === 'rejected' && !empty($custom->manager_feedback))
+                                    <span class="tooltip-wrap">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-text">{{ $custom->manager_feedback }}</span>
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -72,9 +86,27 @@
                             <td style="padding: 12px; font-weight: bold; color: var(--primary);">{{ $reservation->resource->label }}</td>
                             <td style="padding: 12px; font-size: 0.85rem;">Du {{ \Carbon\Carbon::parse($reservation->start_date)->format('d/m/Y') }}<br>Au {{ \Carbon\Carbon::parse($reservation->end_date)->format('d/m/Y') }}</td>
                             <td style="padding: 12px;">
-                                <span style="font-weight: bold; color: {{ $reservation->status == 'approved' ? 'green' : ($reservation->status == 'pending' ? 'orange' : 'red') }}">
-                                    {{ $reservation->status == 'pending' ? 'En attente' : ($reservation->status == 'approved' ? 'Approuvée' : 'Refusée') }}
-                                </span>
+                                @php
+                                    $statusStyles = [
+                                        'pending'  => ['label'=>'⏳ En attente', 'color'=>'#e67e22', 'bg'=>'rgba(230,126,34,0.1)'],
+                                        'approved' => ['label'=>'✅ Approuvée',  'color'=>'#27ae60', 'bg'=>'rgba(39,174,96,0.1)'],
+                                        'active'   => ['label'=>'🔵 Active',     'color'=>'#2980b9', 'bg'=>'rgba(41,128,185,0.1)'],
+                                        'rejected' => ['label'=>'❌ Refusée',   'color'=>'#e74c3c', 'bg'=>'rgba(231,76,60,0.1)'],
+                                        'completed'=> ['label'=>'✔ Terminée',  'color'=>'#95a5a6', 'bg'=>'rgba(149,165,166,0.1)'],
+                                    ];
+                                    $ss = $statusStyles[$reservation->status] ?? ['label'=>$reservation->status,'color'=>'#aaa','bg'=>'#eee'];
+                                @endphp
+                                <div style="display:inline-flex; align-items:center; gap:6px;">
+                                    <span style="font-weight:700; font-size:0.82rem; padding:3px 10px; border-radius:20px; color:{{ $ss['color'] }}; background:{{ $ss['bg'] }};">
+                                        {{ $ss['label'] }}
+                                    </span>
+                                    @if($reservation->status === 'rejected' && $reservation->manager_feedback)
+                                        <span class="tooltip-wrap">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-text">{{ $reservation->manager_feedback }}</span>
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -121,4 +153,36 @@
         @endif
     </div>
 </div>
+
+<style>
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+.tooltip-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 17px; height: 17px; border-radius: 50%;
+    background: rgba(231,76,60,0.15); color: #e74c3c;
+    font-size: 0.72rem; font-weight: 800; cursor: default;
+    border: 1px solid rgba(231,76,60,0.35);
+    user-select: none;
+}
+.tooltip-text {
+    display: none;
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: #2d3436; color: #fff;
+    padding: 7px 11px; border-radius: 7px;
+    font-size: 0.8rem; font-weight: 500; white-space: pre-wrap;
+    max-width: 240px; min-width: 140px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 100;
+    pointer-events: none;
+}
+.tooltip-text::after {
+    content: '';
+    position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #2d3436;
+}
+.tooltip-wrap:hover .tooltip-text { display: block; }
+</style>
 @endsection

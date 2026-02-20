@@ -16,10 +16,11 @@ class Resource extends Model
         'specifications',
         'location',
         'status',
+        'condition',
+        'internal_notes',
         'manager_id',
     ];
 
-    // MODIFICATION IMPORTANTE : Convertit automatiquement le JSON en tableau PHP
     protected $casts = [
         'specifications' => 'array',
     ];
@@ -32,5 +33,34 @@ class Resource extends Model
     public function reservations()
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    public function unavailabilityPeriods()
+    {
+        return $this->hasMany(UnavailabilityPeriod::class)->orderBy('start_date', 'desc');
+    }
+
+    /**
+     * Vérifie si une période d'indisponibilité est active en ce moment.
+     */
+    public function isCurrentlyUnavailable(): bool
+    {
+        $now = now();
+        return $this->unavailabilityPeriods()
+            ->where('start_date', '<=', $now)
+            ->where('end_date', '>=', $now)
+            ->exists();
+    }
+
+    /**
+     * Retourne le label de la condition avec sa couleur.
+     */
+    public function conditionLabel(): array
+    {
+        return match($this->condition) {
+            'dégradé' => ['label' => '⚠️ Dégradé',  'color' => '#e67e22'],
+            'critique' => ['label' => '🔴 Critique', 'color' => '#e74c3c'],
+            default    => ['label' => '✅ Bon',       'color' => '#2ecc71'],
+        };
     }
 }

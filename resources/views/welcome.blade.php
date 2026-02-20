@@ -103,7 +103,7 @@
         <div>
             <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Comprendre nos Ressources</h2>
             <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 35px;">Guide rapide des technologies disponibles.</p>
-            <a href="{{ route('resources.all') }}" class="btn btn-outline btn-anim" style="padding: 12px 30px; font-weight: 600;">Catalogue &rarr;</a>
+            <a href="{{ route('resources.all') }}" class="btn btn-primary btn-anim" style="padding: 16px 36px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(15, 163, 163, 0.3);">Catalogue &rarr;</a>
         </div>
         <div style="display: grid; gap: 20px;">
             <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
@@ -114,6 +114,9 @@
             </div>
             <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
                 <div class="icon-box" style="margin-bottom: 0; min-width: 60px;">💾</div><div><h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Stockage Bloc</h4><p style="color: var(--text-muted); margin: 0;">Données persistantes haute performance.</p></div>
+            </div>
+            <div class="hover-card" style="flex-direction: row; align-items: center; padding: 20px; gap: 20px;">
+                <div class="icon-box" style="margin-bottom: 0; min-width: 60px;">🌐</div><div><h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 5px;">Réseau</h4><p style="color: var(--text-muted); margin: 0;">Connectivité haute performance et SDN.</p></div>
             </div>
         </div>
     </div>
@@ -137,6 +140,7 @@
         <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px;">Une question ? Notre équipe vous répond.</p>
         
         @if(session('success')) <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 25px; width: 100%;">{{ session('success') }}</div> @endif
+        @if(session('error')) <div style="background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 25px; width: 100%;">{{ session('error') }}</div> @endif
 
         <form action="{{ route('contact.send') }}" method="POST" style="width: 100%; text-align: left; display: grid; gap: 20px;">
             @csrf
